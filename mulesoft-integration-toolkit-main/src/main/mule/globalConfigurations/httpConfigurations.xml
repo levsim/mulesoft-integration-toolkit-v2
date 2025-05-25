@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+      xmlns="http://www.mulesoft.org/schema/mule/core"
+      xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="
+        http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+        http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+  
+  <http:listener-config name="HTTP_Listener_6061_learnmulesoft" doc:name="HTTP Listener config" doc:id="423391f3-393b-4032-b86d-b70fe7740d1c" basePath="${httpListener.basepath}">
+    <http:listener-connection host="${httpListener.host}" port="${httpListener.port}" readTimeout="${httpListener.readTimeout}"/>
+  </http:listener-config>
+  
+  <http:request-config name="HTTPS_PublicApiOrg" doc:name="HTTP Request configuration" doc:id="378d0d17-d1d1-40f4-9645-d17d12e1bdbd">
+    <http:request-connection protocol="HTTPS" host="api.publicapis.org" />
+  </http:request-config>
+  
+  <http:request-config name="HTTPS_ApiAgFy" doc:name="HTTP Request configuration" doc:id="4f27ba4b-6f32-4b8b-8d58-c5a0bf9ac165">
+    <http:request-connection protocol="HTTPS" host="api.agify.io" />
+  </http:request-config>
+  
+  <http:request-config name="HTTP_Request_DataUSA_IO" doc:name="HTTP Request configuration" doc:id="018e02a8-0310-45b9-bdfa-1e663d57dd08" basePath="/api">
+    <http:request-connection protocol="HTTPS" host="datausa.io" />
+  </http:request-config>
+  
+  <http:request-config name="HTTP_Request_IPInfo" doc:name="HTTP Request configuration" doc:id="03c1e146-fe3e-4f78-b2fb-b8c7d8d224fd">
+    <http:request-connection host="ipinfo.io" protocol="HTTPS"/>
+  </http:request-config>
+  
+  <configuration-properties doc:name="Configuration properties" doc:id="a9d8bfc5-ce33-4094-8ac4-866bd13c5d9c" file="conectconfiguration\localhost.yaml"/>
+</mule>

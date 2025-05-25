@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="operators101" doc:id="9ad9ac60-c333-4d4b-a7ba-e15f4c6e089f" >
+		<ee:transform doc:name="++--" doc:id="4a9d0e34-1425-4a1c-a371-3c8000490dc9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"conNumbers" : [1,2,3] ++ [4,5,6] ++ ["a"],
+	"UnconNumbers" : [1,2,3] -- [1],
+	"payload1": "hi" ++ " manju kaushik"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Average" doc:id="ab145d69-71b8-4a31-8a3d-0bb31205210e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"avg1": avg([1,1000]),
+	"avg2": avg([1,1000,5687])
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="distinctBy" doc:id="5230920f-ca72-4f22-986d-e73a7f6c607e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var studentDetails = {
+	"name": "manju",
+	"subjects": [
+		"maths",
+		"physics",
+		"science",
+		"maths"
+	],
+	"semester": "1st"
+}
+
+---
+//[0,1,2,3,4,1,2,7,8,9,6,12,13,12] distinctBy (arrayValue) -> {
+//	
+//	"removeDuplicateElements": arrayValue
+//}
+
+studentDetails.subjects distinctBy $]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="endsWith" doc:id="fd78fbc1-5839-443e-80f6-f83a7285bd29" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+["mulesofts" endsWith  "fts"]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="find" doc:id="8924ad43-78b0-4422-8794-d80e32d1f36f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+["a", "manju", "c", "a"] find ("a")]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="Operators102" doc:id="93beaf74-98b6-43c6-8d15-e6be3f27895d" >
+		<ee:transform doc:name="indexOf" doc:id="79e48892-ebe0-46a6-a5f4-348e9c59ad97" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"key1": ["a", "b", "c", "d"] indexOf  "u",
+	"key2": "manjukaushik" indexOf  "k"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="isUsage" doc:id="423b5fb8-ecd6-40d5-a898-84921649e8c1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"isblanks":{
+		"isBlank1": isBlank(""),
+		"isBlank2": isBlank("MULE"),
+		"isBlank3": isBlank(null),
+		"isBlank4": isBlank('')	
+	},
+	"isdecimals": {
+		"isdecmial1": isDecimal(1.2),
+		"isdecmial1": isDecimal(1)
+	},
+	"isEmpty": {
+		"isEmpty1": isEmpty([]),
+		"isEmpty2": isEmpty({}),
+		"isEmpty3": isEmpty(null),
+		"isEmpty4": isEmpty(""),
+		"isEmpty5": isEmpty(''),
+		"isEmpty6": isEmpty("Mule")
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="minAndMax" doc:id="3221b3e6-7bdb-4e12-82bb-0ddb4aeaab09" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/dw
+---
+{
+	"maximum": max([1,1000, 234, 999, 1000.1]),
+	"minimum": min([1,1000, 234, 999, 1000.1, 0.2])
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="mod" doc:id="3268aabb-118f-481d-9e52-c89cf3283866" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/dw
+---
+
+[(3 mod 2), (4 mod 2), (2 mod 2), (1 mod 2), (0.75 mod 2)]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="**Flatten**" doc:id="95bad151-98a3-4e99-b99d-9b2bf4b66806" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var A1 = [1,2,3,4]
+var A2 = [7,8,6,9,10]
+var A3 = [12,14,19,25]
+
+var consolidateArray = [A1, A2, A3]
+
+var studentDetails = {	
+	userDetails: [
+		{
+			"myName": "Manju_Kaushik",
+			"toalSemesterCompleted":[
+				{
+					"semester": "1",
+					"yearofpassing": "2005"
+				},
+				{
+					"semester": "2",
+					"yearofpassing": "2006"
+				}
+			]
+		},
+		{
+			"myName": "Rahul_Kaushik",
+			"toalSemesterCompleted":[
+				{
+					"semester": "3",
+					"yearofpassing": "2005"
+				},
+				{
+					"semester": "4",
+					"yearofpassing": "2006"
+				}
+			]			
+			
+		}
+		
+	]	
+}
+
+---
+//flatten(consolidateArray)
+{
+	"key1": flatten(studentDetails.userDetails.toalSemesterCompleted)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="**filter**" doc:id="56b07061-ff62-46fa-920c-9555ec195058" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+//[9,1,3,5,6,99,12,34] filter ((item) -> item > 10)
+
+[
+	{
+		"name": "manju",
+		"id": 1
+	},
+	{
+		"name": "rahul",
+		"id": 2
+	}
+] filter ((item) -> item.id == 1)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="$-$$-$$$" doc:id="c54c7715-8e53-4965-9d1d-1954da2fa08d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var numbers = (6 to 15)
+---
+//numbers filter ( (argument1) -> (argument1>2 and argument1<10 ))
+
+//numbers filter(
+//	(($ > 2 and $ <10 ))
+//)
+
+payload filter $.empsalary > 1000]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

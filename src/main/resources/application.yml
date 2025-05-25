@@ -1,0 +1,60 @@
+# Spring Boot application configuration
+spring:
+  application:
+    name: mulesoft-migrated-app
+  # ActiveMQ Configuration
+  activemq:
+    broker-url: tcp://localhost:61616 # Default ActiveMQ broker URL
+    # For a secured broker, uncomment and set these:
+    # user: admin
+    # password: admin
+    # Example: In-memory broker for testing (add activemq-broker dependency if not present for this)
+    # in-memory: true 
+    # broker-url: vm://localhost?broker.persistent=false 
+
+
+# Server port for Spring Boot (used by platform-http)
+server:
+  port: 6061
+
+# Camel configuration
+camel:
+  springboot:
+    name: CamelMigrationService
+  # Configure platform-http to have a base path, similar to Mule's basePath
+  # All platform-http endpoints will be prefixed with /api
+  # e.g., platform-http:/asyncchoice will be accessible at /api/asyncchoice
+  component:
+    platform-http:
+      path-prefix: /api # This effectively sets a base path for platform-http
+
+# File path configurations
+file:
+  output:
+    directory: data/output
+  input:
+    directory: data/input
+  processed:
+    directory: data/processed
+
+
+# Example Datasource configuration (if needed later)
+#  datasource:
+#    primary:
+#      jdbc-url: jdbc:h2:mem:testdb
+#      username: sa
+#      password:
+#      driver-class-name: org.h2.Driver
+
+# Logging levels
+logging:
+  level:
+    org.apache.camel: INFO
+    com.mycompany.camelmigration: DEBUG
+    org.apache.activemq: INFO # Optional: set specific ActiveMQ logging
+
+# Example Caffeine cache configuration (for ObjectStore like functionality)
+# caffeine:
+#   cache:
+#     appCache:
+#       spec: maximumSize=1000,expireAfterAccess=300s

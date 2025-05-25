@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<error-handler name="handleAnyMathematicalError" doc:id="260f8f61-ff31-4845-9c10-aac1c30a6518" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="26783084-eee8-4d98-99e8-44e0351f9892" type="MATH:STRING_EXCEPTION" >
+			<logger level="INFO" doc:name="We are in default error handler - On error Continue" doc:id="50a6362d-eb4c-4d73-a5e0-d97f6ec8f4c4" message="We are in default error handler | On error Continue" />
+		</on-error-propagate>
+	</error-handler>
+	<error-handler name="handleDatabaseErrorOnly" doc:id="7532fd70-0319-495e-b275-f51a92b9bdb8" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="65101137-1d70-4e0e-b1d8-accb9c42c40d" type="DB:BAD_SQL_SYNTAX">
+			<logger level="INFO" doc:name="DB:BAD_SQL_SYNTAX" doc:id="b7a20158-2dba-4747-8ba9-1a276b3f7f84" message="DB:BAD_SQL_SYNTAX"/>
+			<ee:transform doc:name="Transform Message" doc:id="d8d49e4e-bb17-4b03-8508-819887d90a50" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	errorType: "DB:BAD_SQL_SYNTAX",
+	errorMessage: "Bad Syntax"
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="591d2093-51c7-4f35-be6a-50318851e658" type="DB:CONNECTIVITY">
+			<logger level="INFO" doc:name="DB:CONNECTIVITY" doc:id="cf35a696-7da6-4f52-a873-c3be795fff56" message="DB:CONNECTIVITY" />
+			<ee:transform doc:name="Transform Message" doc:id="6734c5fc-ba4d-4f37-bb60-72f32bd5f39d" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	errorType: "DB:CONNECTIVITY",
+	errorMessage: "Unable to connect to Database"
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-continue>
+	</error-handler>
+	<error-handler name="handleHTTPErrors" doc:id="257b6a80-468f-4142-8ca0-20b67ca0ebf5" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="f607d425-8b37-40f9-8bd8-fc05fdff1b38" type="HTTP:BAD_GATEWAY">
+			<logger level="INFO" doc:name="HTTP  - BAD_GATEWAY" doc:id="35770b91-6ed0-4288-85a6-af96f4905def" message="Error Type is HTTP:BAD_GATEWAY"/>
+			<ee:transform doc:name="Transform Message" doc:id="677d80d3-4e81-452c-aee8-79dd7a6000c5" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	errorType: "HTTP:BAD_GATEWAY",
+	errorMessage: "Bad Gateway"
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="6012ef53-a1c0-47f5-92c5-58ae10169d1f" type="HTTP:BAD_REQUEST, HTTP:CLIENT_SECURITY" >
+			<logger level="INFO" doc:name="HTTP:BAD_REQUEST, HTTP:CLIENT_SECURITY" doc:id="464d8067-6162-49f6-8304-290ce0246b1a" message="Error Type is HTTP:BAD_GATEWAY" />
+			<ee:transform doc:name="Transform Message" doc:id="8d114aca-f3e7-4699-8794-9cbe00101243" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	errorType: "HTTP:BAD_REQUEST, HTTP:CLIENT_SECURITY",
+	errorMessage: "It's a bad Request or client security"
+}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+		</on-error-continue>
+	</error-handler>
+</mule>

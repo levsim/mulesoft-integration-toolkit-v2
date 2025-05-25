@@ -1,0 +1,29 @@
+# Test specific properties
+
+file:
+  output:
+    directory: target/test-data/output # Use target for maven build cleanup
+  input:
+    directory: target/test-data/input
+  processed:
+    directory: target/test-data/processed
+
+# For testing, an embedded ActiveMQ broker is often preferred.
+# Add 'org.apache.activemq:activemq-broker' and 'org.apache.activemq:activemq-kahadb-store' to pom.xml if not using existing broker.
+# Or use vm transport if broker is started within the same JVM by Camel.
+spring:
+  activemq:
+    broker-url: vm://localhost?broker.persistent=false # In-memory broker for tests
+    # No need for user/password for vm broker usually
+
+# Ensure tests use a different server port if parallel execution or conflicts are a concern
+# server:
+#  port: 8091 # Example test port
+
+logging:
+  level:
+    com.mycompany.camelmigration: DEBUG
+    org.apache.camel.component.file: DEBUG # Enable DEBUG for file component to see moves
+    org.apache.activemq: WARN # Reduce ActiveMQ noise for tests
+    # org.springframework.boot.test: DEBUG
+    # org.apache.camel.test.spring.junit5: DEBUG

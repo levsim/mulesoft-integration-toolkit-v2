@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="scatterGatherModuleFlow" doc:id="92f858c2-676c-47c2-96fe-9da09ad57864" >
+		<http:listener doc:name="Listener" doc:id="24883271-a7be-40ed-a0c3-564e3e495519" config-ref="HTTP_Listener_6061_learnmulesoft" path="/scattergather101"/>
+		<logger level="INFO" doc:name="Before SC" doc:id="bc2b719b-5fa9-4848-bf1a-144ee3965680" message="#[payload]"/>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="6ce91e2a-e4d0-4056-b3ad-44969dcf2c2f" >
+			<route >
+				<set-payload value='#[{&#10;	&#10;	"payload01Name": "Manju",&#10;	"payload01ID": 1,&#10;	"payload01Location": "INDIA",&#10;	"payload01Salary": 2000&#10;}]' doc:name="Payload01" doc:id="90fc584e-3b00-4955-ad39-2f9ae08dba0e" />
+				<logger level="INFO" doc:name="Payload 01" doc:id="e757aa83-0ade-499a-bff3-2d648f348cce" message="Payload 01"/>
+			</route>
+			<route >
+				<set-payload value='#[{&#10;	&#10;	"payload02Name": "Peter",&#10;	"payload02ID": 2,&#10;	"payload02Location": "UK",&#10;	"payload02Salary": 1000&#10;}]' doc:name="Payload02" doc:id="bbdcdfb9-817a-4859-8043-29137ed5566d" />
+				<logger level="INFO" doc:name="Payload 02" doc:id="03b57409-3816-4f6a-879e-6a2e4b1e27bf" message="Payload 02"/>
+			</route>
+			<route >
+				<set-payload value='#[{&#10;	&#10;	"payload03Name": "Rahul",&#10;	"payload03ID": 3,&#10;	"payload03Location": "USA",&#10;	"payload03Salary": 3000&#10;}]' doc:name="Payload03" doc:id="449c39bf-d0d6-440d-9ed9-d6422c616b0d" />
+				<logger level="INFO" doc:name="Payload 03" doc:id="ce1e3012-c160-4ab3-aa96-ecd5a5de3d59" message="Payload 03"/>
+			</route>
+		</scatter-gather>
+		<ee:transform doc:name="Convert to JSON and send HTTP Response" doc:id="35cb73fa-0618-4e83-96e3-99df64a2b003" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+//extract only the payload information
+payload..payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="End SC" doc:id="658202ab-734b-4e0f-8128-756d0e40e0e9" message="#[payload]"/>
+	</flow>
+</mule>
