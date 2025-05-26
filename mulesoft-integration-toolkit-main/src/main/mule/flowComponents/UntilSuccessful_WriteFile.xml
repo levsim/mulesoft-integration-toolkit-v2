@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<flow name="UntilSuccessful_WriteFileFlow" doc:id="cad70d70-0902-4793-b2a6-f37053594a38" >
+		<http:listener doc:name="Listener" doc:id="dcd56617-6c91-4a4b-b9b2-806d54b28d0e" config-ref="HTTP_Listener_6061_learnmulesoft" path="/unitsuccesswritefile"/>
+		<until-successful maxRetries="5" doc:name="Until Successful" doc:id="33aaa361-1329-417a-bb94-585c71f973a0" millisBetweenRetries="6000">
+			<file:write doc:name="Write Abstract File to FileOperations Directory" doc:id="a216987a-4e00-4904-a7fe-ba9bf40be5bc" path="Abstract.txt" config-ref="FileOperations_Directory" createParentDirectories="false">
+			<file:content><![CDATA[#[%dw 2.0
+output application/json
+---
+{
+    "ip": "161.185.160.98",
+    "hostname": "mspapi-ctwbcp05-fdny.nyc.gov",
+    "city": "New York City",
+    "region": "New York",
+    "country": "US",
+    "loc": "40.7143,-74.0060",
+    "org": "AS22252 The City of New York",
+    "postal": "10004",
+    "timezone": "America/New_York",
+    "readme": "https://ipinfo.io/missingauth"
+}]]]></file:content>
+		</file:write>
+			<file:rename doc:name="Rename" doc:id="2808205e-643e-4f90-96d5-54f5505343d9" config-ref="FileOperations_Directory" path="Abstract.txt" to="NewAbstract.txt"/>
+			<file:read doc:name="Read" doc:id="298bbf2b-aaf3-41f8-86c6-2fdcc59fd290" config-ref="FileOperations_Directory" path="NewAbstract.txt"/>
+			<file:list doc:name="List" doc:id="48de08f2-4cc3-4348-b950-ff9dcd66d760" directoryPath="C:\Users\Xpro64\Documents\Mulesoft\FileOperations"/>
+			<logger level="INFO" doc:name="Logger" doc:id="6bcbfd7a-7022-40d5-b198-5cff1c5874b3" message="#[payload]"/>
+		</until-successful>
+	</flow>
+</mule>

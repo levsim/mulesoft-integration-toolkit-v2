@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<ee:object-store-caching-strategy name="Caching_Strategy" doc:name="Caching Strategy" doc:id="115bff29-000a-45e6-92c1-8bd91113df03" keyGenerationExpression="#[attributes.uriParams.passIPAddr]"/>
+	<flow name="Ipinfo_Partofcache" doc:id="61586dbb-8ce8-4d60-8bb4-e52bfb3d0584" >
+		<http:listener doc:name="Listener" doc:id="101599b3-6a53-48f1-a6b9-2aa92dc422ce" config-ref="HTTP_Listener_6061_learnmulesoft" path="/cacheipinfo/{passIPAddr}/{name}" />
+		<logger level="INFO" doc:name="Outside Cache - Started" doc:id="3d75f3a4-d471-4c57-92c3-48dc56a9ec2b" message='#[{&#10;	"message": "Outside Cache Started",&#10;	"timeMaintain": now()&#10;}]'/>
+		<ee:cache doc:name="Cache for IPInfo" doc:id="0768f73e-b2ab-4a50-b7b6-ca2ee6b908c4" cachingStrategy-ref="Caching_Strategy" filterExpression='#[attributes.uriParams.passIPAddr != "162.185.160.93"]'>
+			<logger level="INFO" doc:name="Inside Cache - Started" doc:id="6dbb58e2-3f64-4697-804d-aefde1fb707e" message='#[{&#10;	"message": "Inside Cache Started",&#10;	"timeMaintain": now()&#10;}]' />
+			<http:request method="GET" doc:name="Invoke IPInfo" doc:id="75c55352-bf57-4349-8a79-7cb510657501" config-ref="HTTP_Request_IPInfo" path="/{value1}/{value2}">
+			<http:uri-params><![CDATA[#[{
+	value1 : attributes.uriParams.passIPAddr,
+	value2 : attributes.uriParams.name
+}]]]></http:uri-params>
+		</http:request>
+			<ee:transform doc:name="Payload" doc:id="4089890e-6f9e-4633-bdff-4a3c964c21d3">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			<logger level="INFO" doc:name="Inside Cache - Ended" doc:id="b87681b4-e6ba-4288-87a4-ee6ddf7aaafa" message='#[{&#10;	"message": "Inside Cache Ended",&#10;	"timeMaintain": now()&#10;}]' />
+		</ee:cache>
+		<logger level="INFO" doc:name="Outside Cache - Ended" doc:id="a044be6c-8e15-4daf-9e1a-5a28d6a370fe" message='#[{&#10;	"message": "Outside Cache Ended",&#10;	"timeMaintain": now()&#10;}]' />
+	</flow>
+</mule>

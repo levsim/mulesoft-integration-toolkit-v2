@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="DateTimeFlow01" doc:id="7c613e51-b078-49e5-9c1e-4c2bed76e804" >
+		<ee:transform doc:name="POC1" doc:id="b0a1eeae-7f35-4bab-8a8d-d583dc434c77" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+//Datetime format is very very case sensitive
+//uuuu is part of the java8 package
+{
+	"date1": |2022-07-09T16:10:35| as String {format: "uuuu-MMM-dd"},
+	"date2": |2022-07-09T16:10:35| as String {format: "kk:mm:ss a"},
+	"date3": |2022-07-09T16:10:35| as String {format: "kk:mm:ss a, MMM/dd,uuuu"}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="POC2 - CreateCustomDateFormat" doc:id="c8d3999a-2585-46b9-9d66-09e17ead05db" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+type CustomDateformat = String {format: "uuuu/MM/dd"}
+---
+{
+	"date1": |2022-07-09T16:10:35| as CustomDateformat
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="DateCookBooks" doc:id="bea74e3a-f5ad-4380-962e-ca5bff410d51">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var myDate = ("2022-07-09T17:10:35.358" as DateTime)
+---
+//Visit the website for more details
+//https://docs.mulesoft.com/dataweave/2.3/dataweave-cookbook-format-dates
+{
+	"date1": myDate as String {format: "u"},
+	"date2": myDate as String {format: "uu"},
+	"date3-year": myDate as String {format: "uuu"},
+	
+	"date4-ADBC": myDate as String {format: "G"},
+	"date5": myDate as String {format: "yy"},
+	
+	"date6-year": myDate as String {format: "yyyy"},
+	"date7-days": myDate as String {format: "D"},
+	
+	"date8-month": myDate as String {format: "M"},
+	"date9": myDate as String {format: "MM"},
+	
+	"date10-Hour24": myDate as String {format: "H"},
+	"date11-Hour12": myDate as String {format: "hh"},
+	
+	"date12-mnothoftheYear": myDate as String {format: "L"},
+	"date13": myDate as String {format: "E"},
+	"date14-weekofmoth": myDate as String {format: "F"}
+	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="DateTimeFlow02" doc:id="d5d6c7c0-64a0-4705-b4cf-7d070e1a1fcd" >
+		<ee:transform doc:name="Duration Coercion" doc:id="bda90451-762c-4c50-9ae2-75f7dd9c0f52" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+//Duration Coercion
+//https://docs.mulesoft.com/dataweave/2.4/dataweave-types-coercion#modeExamples
+var learnDT = (
+	
+	|2022-09-07T17:15:12.234| - |2021-07-10T08:14:59.899|
+)
+---
+{
+	"subtractedValue": learnDT,
+	"extractNano": learnDT as Number{unit: "nanos"},
+	"extractMilliseconds": learnDT as Number{unit: "milliseconds"},
+	"extractseconds": learnDT as Number{unit: "seconds"},
+	"extractHours": learnDT as Number{unit: "hours"},
+	//"extractDays": learnDT as Number{unit: "days"},
+	//"extractDays": learnDT as Number{unit: "years"},
+	
+	"years": |P1Y11M| as Number {unit: "years"},
+	"months": |P1Y12M| as Number {unit: "months"}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="PerformOperationInDT" doc:id="e33def70-f857-41f8-9710-e2c1f21eaefa" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+//https://docs.mulesoft.com/dataweave/2.4/dataweave-cookbook-add-and-subtract-time
+//D = Days, Y=Years, M=Month|| T (H/M/S)
+var noOfDays = 20
+var noOfMonths = 12
+var noOfYears = 25
+---
+{
+	"datePeriodSubDays" : |2022-07-09T17:23:21Z| - |P1D|,
+	"datePeriodSubYear" : |2022-07-09T17:23:21Z| - |P1Y|,
+	"datePeriodSubMonth" : |2022-07-09T17:23:21Z| - |P1M|,
+	
+	"addYear": |2022-07-09T17:23:21Z| + |P1Y|,
+	"removeZ": |2022-07-09T17:23:21| - |P1Y|,
+	
+	"AddSub": |2022-07-09T17:23:21| - |2021-06-10T14:23:21|,
+	
+	"calculateHour": |17:23:21| - |PT2H|,
+	"calculateMinutes": |PT2M| - |17:23:21|,
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="extractDate" doc:id="931012d4-abdc-402e-a088-1d3c0bba35c1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+//Duration Coercion
+//https://docs.mulesoft.com/dataweave/2.4/dataweave-types-coercion#modeExamples
+var learnDT = |2022-09-07T17:15:12.234+05:30|
+---
+{
+	"k1": learnDT.nanoseconds,
+	"k2": learnDT.milliseconds,
+	"k3": learnDT.minutes,
+	"k4": learnDT.month,
+	"k5": learnDT.dayOfYear,
+	"k6": learnDT.timezone
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="nowOperator" doc:id="bc7b3657-aa82-45da-8c44-877bb4711577" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+//https://docs.mulesoft.com/dataweave/2.3/dataweave-cookbook-change-time-zone
+---
+{
+	"k1": now() as DateTime >> "Asia/Calcutta",
+	"k2": now() as Date as String {fromat: "yyyy-MMM-dd"},
+	"k3": now() as Time,
+	"k4": now().hour,
+	"k5": now().month,
+	"k6": now() as Date - |P2D|,
+	"k7": now() as DateTime - |PT2H|,
+	"compareDates": now() as Date as String {fromat: "yyyy"} > "2020"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="typeOf" doc:id="7671915b-9653-45a3-80d4-0c9611eae5c7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"k1": typeOf("Manju"),
+	"k2": typeOf(10),
+	"k3": typeOf(|2020-10-17|),
+	"k4": typeOf(|2020-10-17T11:11:11|),
+	"k5": typeOf(|2020-10-17T11:11:11+05:30|),
+	"k6": typeOf(|05:30|),
+	"k7": typeOf(|+05:30|),
+	"k8": typeOf(|PT1H|),
+	"k9": typeOf(|11:11:11+05:30|)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

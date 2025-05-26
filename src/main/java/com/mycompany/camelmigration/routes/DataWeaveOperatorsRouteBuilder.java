@@ -54,7 +54,48 @@ public class DataWeaveOperatorsRouteBuilder extends RouteBuilder {
             })
             .bean(dataWeaveOperatorsBean, "flattenList(${exchangeProperty.myListOfLists})")
             .log("flattenList result: ${body}")
+
+            // --- Demonstrating new DateTime and Array methods ---
+
+            // A. DateTime Operations
+            .log("--- Testing DateTime Operations ---")
+            .bean(dataWeaveOperatorsBean, "formatDateTimePoc1")
+            .marshal().json(JsonLibrary.Jackson)
+            .log("formatDateTimePoc1 result: ${body}")
+
+            .setProperty("dateTimeStr1", constant("2022-09-07T17:15:12.234"))
+            .setProperty("dateTimeStr2", constant("2021-07-10T08:14:59.899"))
+            .bean(dataWeaveOperatorsBean, "calculateTimeDifferenceAndUnits(${exchangeProperty.dateTimeStr1}, ${exchangeProperty.dateTimeStr2})")
+            .marshal().json(JsonLibrary.Jackson)
+            .log("calculateTimeDifferenceAndUnits result: ${body}")
             
-            .setBody(simple("Successfully tested DataWeave operator bean methods. Final JSON body is from createSampleMap."));
+            .bean(dataWeaveOperatorsBean, "dateTimeArithmetic")
+            .marshal().json(JsonLibrary.Jackson)
+            .log("dateTimeArithmetic result: ${body}")
+
+            // B. Array Operations
+            .log("--- Testing Array Operations ---")
+            .setProperty("numberListForCount", () -> Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8))
+            .bean(dataWeaveOperatorsBean, "countByEvenOddInList(${exchangeProperty.numberListForCount})")
+            .marshal().json(JsonLibrary.Jackson)
+            .log("countByEvenOddInList result: ${body}")
+
+            .setProperty("numberListForDivide", () -> Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
+            .bean(dataWeaveOperatorsBean, "divideListIntoChunks(${exchangeProperty.numberListForDivide}, 3)") // Chunk size 3
+            .marshal().json(JsonLibrary.Jackson)
+            .log("divideListIntoChunks (size 3) result: ${body}")
+            
+            .process(e -> {
+                List<Map<String, Integer>> items = Arrays.asList(
+                    Map.of("amount", 100, "id", 1),
+                    Map.of("amount", 250, "id", 2),
+                    Map.of("amount", 50, "id", 3)
+                );
+                e.setProperty("itemListForSum", items);
+            })
+            .bean(dataWeaveOperatorsBean, "sumByProperty(${exchangeProperty.itemListForSum}, 'amount')")
+            .log("sumByProperty ('amount') result: ${body}")
+            
+            .setBody(simple("Successfully tested DataWeave operator bean methods. Final logged body is from sumByProperty."));
     }
 }

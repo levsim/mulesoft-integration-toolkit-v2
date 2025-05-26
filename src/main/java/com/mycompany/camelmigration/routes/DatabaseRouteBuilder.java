@@ -27,18 +27,15 @@ public class DatabaseRouteBuilder extends RouteBuilder {
                     .setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
                 .otherwise()
                     .log(LoggingLevel.INFO, "Processing request for city: ${header.city}")
-                    // Construct SQL query.
-                    // IMPORTANT: This method of constructing SQL queries by concatenating strings
-                    // is vulnerable to SQL injection. For production, always use parameterized queries
-                    // with the SQL component, e.g., "sql:SELECT * FROM traditions WHERE City = :#${header.city}"
-                    // or "sql:SELECT * FROM traditions WHERE City = :?city" and pass parameters in a Map.
-                    // For this migration step, we are matching the Mule example's string concatenation.
-                    .setBody(simple("SELECT * FROM traditions WHERE City = '${header.city}'"))
-                    .log(LoggingLevel.INFO, "Executing SQL Query: ${body}")
+                    // Set header for named parameter
+                    .setHeader("cityParam", header("city"))
+                    // Set parameterized SQL query in the body
+                    .setBody(constant("SELECT * FROM traditions WHERE City = :#cityParam"))
+                    .log(LoggingLevel.INFO, "Executing Parameterized SQL Query: ${body} with headers ${headers}")
 
                     // Execute the query using the sql component.
-                    // Assumes a DataSource bean named "dataSource" is configured in Spring Boot.
-                    .to("sql:ignored?dataSource=#dataSource") // "ignored" because the body is the SQL query
+                    // The SQL component will use the message body as the query and headers as parameters.
+                    .to("sql:?dataSource=#dataSource&useMessageBodyForSql=true")
 
                     .log(LoggingLevel.INFO, "Database SELECT Result (raw): ${body}")
 
@@ -56,14 +53,14 @@ public class DatabaseRouteBuilder extends RouteBuilder {
             .log(LoggingLevel.INFO, "Received HTTP POST request on /insertdb")
             .unmarshal().json(JsonLibrary.Jackson, Map.class) // Unmarshal JSON body to Map
             .log(LoggingLevel.DEBUG, "Parsed Insert Payload: ${body}")
-            // IMPORTANT: SQL Injection Vulnerability. Use parameterized queries in production.
-            // Example: "sql:INSERT INTO traditions (ID, City, Tradition) VALUES (:#${body[id]}, :#${body[city]}, :#${body[tradition]})?dataSource=#dataSource"
-            .setProperty("insertId", simple("${body[id]}"))
-            .setProperty("insertCity", simple("${body[city]}"))
-            .setProperty("insertTradition", simple("${body[tradition]}"))
-            .setBody(simple("INSERT INTO traditions (ID, City, Tradition) VALUES (${exchangeProperty.insertId}, '${exchangeProperty.insertCity}', '${exchangeProperty.insertTradition}')"))
-            .log(LoggingLevel.WARN, "SQL INJECTION WARNING: Executing dynamically constructed INSERT query: ${body}")
-            .to("sql:ignored?dataSource=#dataSource")
+            // Set headers from the parsed map for named parameters
+            .setHeader("insertId", simple("${body[id]}"))
+            .setHeader("insertCity", simple("${body[city]}"))
+            .setHeader("insertTradition", simple("${body[tradition]}"))
+            // Set parameterized SQL query in the body
+            .setBody(constant("INSERT INTO traditions (ID, City, Tradition) VALUES (:#insertId, :#insertCity, :#insertTradition)"))
+            .log(LoggingLevel.INFO, "Executing Parameterized SQL Query: ${body} with headers ${headers}")
+            .to("sql:?dataSource=#dataSource&useMessageBodyForSql=true")
             .log(LoggingLevel.INFO, "Database INSERT Result (update count): ${body}")
             .transform().constant("{\"status\": \"Inserted OK\"}")
             .setHeader(Exchange.CONTENT_TYPE, constant("application/json"));
@@ -74,13 +71,13 @@ public class DatabaseRouteBuilder extends RouteBuilder {
             .log(LoggingLevel.INFO, "Received HTTP PUT request on /updatedb")
             .unmarshal().json(JsonLibrary.Jackson, Map.class) // Unmarshal JSON body to Map
             .log(LoggingLevel.DEBUG, "Parsed Update Payload: ${body}")
-            // IMPORTANT: SQL Injection Vulnerability. Use parameterized queries in production.
-            // Example: "sql:UPDATE traditions SET Tradition = :#${body[tradition]} WHERE ID = :#${body[id]}?dataSource=#dataSource"
-            .setProperty("updateTradition", simple("${body[tradition]}"))
-            .setProperty("updateId", simple("${body[id]}"))
-            .setBody(simple("UPDATE traditions SET Tradition = '${exchangeProperty.updateTradition}' WHERE ID = ${exchangeProperty.updateId}"))
-            .log(LoggingLevel.WARN, "SQL INJECTION WARNING: Executing dynamically constructed UPDATE query: ${body}")
-            .to("sql:ignored?dataSource=#dataSource")
+            // Set headers from the parsed map for named parameters
+            .setHeader("updateTradition", simple("${body[tradition]}"))
+            .setHeader("updateId", simple("${body[id]}"))
+            // Set parameterized SQL query in the body
+            .setBody(constant("UPDATE traditions SET Tradition = :#updateTradition WHERE ID = :#updateId"))
+            .log(LoggingLevel.INFO, "Executing Parameterized SQL Query: ${body} with headers ${headers}")
+            .to("sql:?dataSource=#dataSource&useMessageBodyForSql=true")
             .log(LoggingLevel.INFO, "Database UPDATE Result (update count): ${body}")
             .transform().constant("{\"status\": \"Updated OK\"}")
             .setHeader(Exchange.CONTENT_TYPE, constant("application/json"));
@@ -97,11 +94,12 @@ public class DatabaseRouteBuilder extends RouteBuilder {
                     .setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
                 .otherwise()
                     .log(LoggingLevel.INFO, "Processing DELETE request for ID: ${header.id}")
-                    // IMPORTANT: SQL Injection Vulnerability. Use parameterized queries in production.
-                    // Example: "sql:DELETE FROM traditions WHERE ID = :#${header.id}?dataSource=#dataSource"
-                    .setBody(simple("DELETE FROM traditions WHERE ID = ${header.id}"))
-                    .log(LoggingLevel.WARN, "SQL INJECTION WARNING: Executing dynamically constructed DELETE query: ${body}")
-                    .to("sql:ignored?dataSource=#dataSource")
+                    // Set header for named parameter
+                    .setHeader("deleteId", header("id"))
+                    // Set parameterized SQL query in the body
+                    .setBody(constant("DELETE FROM traditions WHERE ID = :#deleteId"))
+                    .log(LoggingLevel.INFO, "Executing Parameterized SQL Query: ${body} with headers ${headers}")
+                    .to("sql:?dataSource=#dataSource&useMessageBodyForSql=true")
                     .log(LoggingLevel.INFO, "Database DELETE Result (update count): ${body}")
                     .transform().constant("{\"status\": \"Deleted OK\"}")
                     .setHeader(Exchange.CONTENT_TYPE, constant("application/json"))

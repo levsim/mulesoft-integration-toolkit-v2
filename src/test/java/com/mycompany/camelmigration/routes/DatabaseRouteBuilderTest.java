@@ -32,10 +32,15 @@ class DatabaseRouteBuilderTest {
 
     @Test
     void testSelectFlow_Success() throws Exception {
+        String testCity = "TestCity";
         AdviceWith.adviceWith(camelContext, "select-db-http", a -> {
             // Replace the SQL endpoint with a mock or a processor
-            a.weaveByToUri("sql:ignored?dataSource=#dataSource")
+            a.weaveByToUri("sql:?dataSource=#dataSource&useMessageBodyForSql=true")
                 .replace().process(exchange -> {
+                    // Verify parameterized query and header
+                    assertEquals("SELECT * FROM traditions WHERE City = :#cityParam", exchange.getIn().getBody(String.class));
+                    assertEquals(testCity, exchange.getIn().getHeader("cityParam"));
+
                     // Simulate a database response for city=TestCity
                     Map<String, Object> row = new HashMap<>();
                     row.put("ID", 1);
@@ -45,19 +50,18 @@ class DatabaseRouteBuilderTest {
                 });
         });
 
-        String city = "TestCity";
         // platform-http uses headers for query parameters
-        Map<String, Object> headers = new HashMap<>();
-        headers.put("city", city);
+        Map<String, Object> requestHeaders = new HashMap<>();
+        requestHeaders.put("city", testCity);
 
         String response = producerTemplate.requestBodyAndHeaders(
-            "platform-http:/api/select?city=" + city, // URI can also carry query params
+            "platform-http:/api/select?city=" + testCity, // URI can also carry query params
             null, 
-            headers, 
+            requestHeaders, 
             String.class
         );
 
-        String expectedJson = "[{\"ID\":1,\"City\":\"TestCity\",\"Tradition\":\"TestTradition\"}]";
+        String expectedJson = "[{\"ID\":1,\"City\":\"TestCity\",\"Tradition\":\"TestTradition\"}]"; // Matches the simulated response
         assertEquals(expectedJson, response);
     }
 
@@ -75,26 +79,28 @@ class DatabaseRouteBuilderTest {
 
     @Test
     void testInsertFlow_Success() throws Exception {
-        AdviceWith.adviceWith(camelContext, "insert-db-http", a -> {
-            a.weaveByToUri("sql:ignored?dataSource=#dataSource")
-                .replace().process(exchange -> {
-                    // Simulate successful DB insert (e.g., by checking the input query)
-                    String query = exchange.getIn().getBody(String.class);
-                    assertTrue(query.contains("INSERT INTO traditions"));
-                    assertTrue(query.contains("TestCityInsert"));
-                    // Set a mock update count or just let it proceed if no specific body is expected from SQL for insert
-                    exchange.getIn().setBody(1); // Simulate 1 row affected
-                });
-        });
-
         Map<String, Object> traditionToInsert = new HashMap<>();
         traditionToInsert.put("id", 100);
         traditionToInsert.put("city", "TestCityInsert");
         traditionToInsert.put("tradition", "New Tradition");
 
+        AdviceWith.adviceWith(camelContext, "insert-db-http", a -> {
+            a.weaveByToUri("sql:?dataSource=#dataSource&useMessageBodyForSql=true")
+                .replace().process(exchange -> {
+                    // Verify parameterized query and headers
+                    assertEquals("INSERT INTO traditions (ID, City, Tradition) VALUES (:#insertId, :#insertCity, :#insertTradition)", exchange.getIn().getBody(String.class));
+                    assertEquals(traditionToInsert.get("id"), exchange.getIn().getHeader("insertId"));
+                    assertEquals(traditionToInsert.get("city"), exchange.getIn().getHeader("insertCity"));
+                    assertEquals(traditionToInsert.get("tradition"), exchange.getIn().getHeader("insertTradition"));
+                    
+                    // Set a mock update count
+                    exchange.getIn().setBody(1); // Simulate 1 row affected
+                });
+        });
+
         String response = producerTemplate.requestBody(
             "platform-http:/api/insertdb", 
-            traditionToInsert, 
+            traditionToInsert,
             String.class
         );
 
@@ -103,18 +109,21 @@ class DatabaseRouteBuilderTest {
     
     @Test
     void testUpdateFlow_Success() throws Exception {
-        AdviceWith.adviceWith(camelContext, "update-db-http", a -> {
-            a.weaveByToUri("sql:ignored?dataSource=#dataSource")
-                .replace().process(exchange -> {
-                    String query = exchange.getIn().getBody(String.class);
-                    assertTrue(query.contains("UPDATE traditions SET Tradition = 'UpdatedTradition' WHERE ID = 200"));
-                    exchange.getIn().setBody(1); // Simulate 1 row affected
-                });
-        });
-
         Map<String, Object> traditionToUpdate = new HashMap<>();
         traditionToUpdate.put("id", 200);
         traditionToUpdate.put("tradition", "UpdatedTradition");
+
+        AdviceWith.adviceWith(camelContext, "update-db-http", a -> {
+            a.weaveByToUri("sql:?dataSource=#dataSource&useMessageBodyForSql=true")
+                .replace().process(exchange -> {
+                    // Verify parameterized query and headers
+                    assertEquals("UPDATE traditions SET Tradition = :#updateTradition WHERE ID = :#updateId", exchange.getIn().getBody(String.class));
+                    assertEquals(traditionToUpdate.get("tradition"), exchange.getIn().getHeader("updateTradition"));
+                    assertEquals(traditionToUpdate.get("id"), exchange.getIn().getHeader("updateId"));
+
+                    exchange.getIn().setBody(1); // Simulate 1 row affected
+                });
+        });
 
         String response = producerTemplate.requestBody(
             "platform-http:/api/updatedb",
@@ -126,23 +135,26 @@ class DatabaseRouteBuilderTest {
 
     @Test
     void testDeleteFlow_Success() throws Exception {
+        String deleteId = "300";
+
         AdviceWith.adviceWith(camelContext, "delete-db-http", a -> {
-            a.weaveByToUri("sql:ignored?dataSource=#dataSource")
+            a.weaveByToUri("sql:?dataSource=#dataSource&useMessageBodyForSql=true")
                 .replace().process(exchange -> {
-                    String query = exchange.getIn().getBody(String.class);
-                    assertTrue(query.contains("DELETE FROM traditions WHERE ID = 300"));
+                    // Verify parameterized query and header
+                    assertEquals("DELETE FROM traditions WHERE ID = :#deleteId", exchange.getIn().getBody(String.class));
+                    assertEquals(deleteId, exchange.getIn().getHeader("deleteId").toString()); // Header might be Integer or String
+
                     exchange.getIn().setBody(1); // Simulate 1 row affected
                 });
         });
         
-        String deleteId = "300";
-        Map<String, Object> headers = new HashMap<>();
-        headers.put("id", deleteId);
+        Map<String, Object> requestHeaders = new HashMap<>();
+        requestHeaders.put("id", deleteId);
 
         String response = producerTemplate.requestBodyAndHeaders(
             "platform-http:/api/deletedb?id=" + deleteId,
             null,
-            headers,
+            requestHeaders,
             String.class
         );
         assertEquals("{\"status\":\"Deleted OK\"}", response);

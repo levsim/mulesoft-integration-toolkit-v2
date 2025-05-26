@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="arrayBasic" doc:id="995c3a0b-cb76-4d19-8db6-31d3c71cf6da" >
+		<ee:transform doc:name="countBy" doc:id="d7c648f3-07e7-433d-879f-12dc55344ad9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Arrays
+output application/json
+---
+{
+	"countBy": [1,2,3,4,5,6] countBy ( ($/2) == 0)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="divdeBy" doc:id="e92d5cbc-33ff-456f-9fb1-3abebd8e06f4" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Arrays
+output application/json
+---
+{
+	"divideBy2": [1,2,3,4,5,6] divideBy 2,
+	"divideBy3": [1,2,3,4,5,6] divideBy 3,
+	"divideBy4": [1,2,3,4,5,6] divideBy 4
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="indexOf" doc:id="96c06930-ae39-4609-95d9-85d373c75c81" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Arrays
+output application/json
+var username = ["user1", "user2", "user3", "user1"]
+---
+indexOf(username, "user1")]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="slice" doc:id="690f832a-b1da-4262-9f4f-cbb2d4b169b6" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Arrays
+output application/json
+
+var slicehead = [0,1,2,3,4,5,6]
+---
+slice(slicehead,3,6)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="sumBy" doc:id="8d966831-7b85-4336-a531-4734c28f063a" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+import * from dw::core::Arrays
+output application/json
+---
+{
+	"itemdetails":[
+		{
+			"item1": 200,
+			"item2": 800,
+		},
+		{
+			"item1": 400,
+			"item2": 700
+		}
+	] sumBy $.item1
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

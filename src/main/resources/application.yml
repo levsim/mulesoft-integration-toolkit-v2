@@ -36,6 +36,10 @@ file:
     directory: data/input
   processed:
     directory: data/processed
+  base: # For UntilSuccessful_WriteFileFlow
+    path: data/untilSuccessfulDemo 
+  list: # For UntilSuccessful_WriteFileFlow file:list operation
+    path: data/listFilesFromHere
 
 
 # Example Datasource configuration (if needed later)
