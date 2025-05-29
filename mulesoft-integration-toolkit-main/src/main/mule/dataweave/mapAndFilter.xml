@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="mapAndmapObjectFlow" doc:id="640d4ed7-cfa0-4e68-8037-633cbf9a8938" >
+		<ee:transform doc:name="map01" doc:id="fffa19ed-eecf-4f97-ae8f-d63d83f2b708" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var studentArrayList = [
+	{
+		"studentID": 1,
+		"studentName": "Manju",
+		"studentLocation": "India"
+	},
+	{
+		"studentID": 2,
+		"studentName": "Mohan",
+		"studentLocation": "USA"		
+	},
+	{
+		"studentID": 3,
+		"studentName": "Rajeev",
+		"studentLocation": "UK"		
+	}
+]
+
+---
+
+studentArrayList map  {
+	
+	($$): $
+}
+//studentArrayList map (item, index) -> {
+//	
+//	"studentID": item.studentID ++ "_" ++ item.studentName,
+//	"stduentLocation": item.studentLocation
+//}
+
+//studentArrayList map  {
+//	
+//	"indexof": $$,
+//	"studentID": $.studentID ++ "_" ++ $.studentName,
+//	"stduentLocation": $ .studentLocation ++ "_" ++ $$
+//}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="map02" doc:id="9b47616e-18bf-46e8-9c73-1c8cecc0cbf5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+---
+
+[
+	"manju",
+	"mohan",
+	"rajeev"
+] map ($$+2): $ ++ 1
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="mapObject01" doc:id="86e26161-eaa9-44b5-9ea7-eec32c21923f">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"key1": "value1",
+	"key2": "value2",
+	"key3": "value3"
+	
+} mapObject  {
+	
+	($$$): {
+		
+		($): $$
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="mapMapObject01" doc:id="917dfa48-a087-48ec-b3e2-f7ba654984f0" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var studentArrayList = [
+	{
+		"studentID": 1,
+		"studentName": "Manju",
+		"studentLocation": "India"
+	},
+	{
+		"studentID": 2,
+		"studentName": "Mohan",
+		"studentLocation": "USA"		
+	},
+	{
+		"studentID": 3,
+		"studentName": "Rajeev",
+		"studentLocation": "UK"		
+	}
+]
+
+---
+studentArrayList map (item, index) -> {	
+	(item mapObject 
+		
+		if( ($ == "Manju")  ){
+			
+			($$): upper($)
+			
+		} else {
+			
+			($$): $
+		}
+		
+	)	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="FilterAndFilterObjects" doc:id="59063517-7151-4592-9f89-ed84dd478877" >
+		<ee:transform doc:name="filter01" doc:id="be4f4fb2-ff4d-4517-bd72-2e2ab466434e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var studentArrayList = [
+	{
+		"studentID": 1,
+		"studentName": "Manju",
+		"studentLocation": "India"
+	},
+	{
+		"studentID": 2,
+		"studentName": "Mohan",
+		"studentLocation": "USA"		
+	},
+	{
+		"studentID": 3,
+		"studentName": "Rajeev",
+		"studentLocation": "UK"		
+	}
+]
+
+---
+
+studentArrayList[0] filterObject (
+	(value, key) -> (value startsWith ("M")) and (key startsWith ("s"))
+	
+)
+
+
+
+//filter($.studentID == 1 and  ($.studentLocation startsWith ("I")) )
+//map  {
+//
+//	"indexof": $$,
+//	"studentID": $.studentID,
+//	"studentName": $.studentName,
+//	"stduentLocation": $ .studentLocation
+//}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="filter02" doc:id="0db72f8b-e67d-419d-b61a-93459c9b72cb" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var studentArrayList = [
+	{
+		"studentID": 1,
+		"studentName": "Manju",
+		"studentLocation": "India"
+	},
+	{
+		"studentID": 2,
+		"studentName": "Mohan",
+		"studentLocation": "USA"		
+	},
+	{
+		"studentID": 3,
+		"studentName": "Rajeev",
+		"studentLocation": "UK"		
+	}
+]
+
+---
+
+studentArrayList filter ($.studentID > 1) map (item, index) ->
+item filterObject(value, key, index) -> index == 2]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

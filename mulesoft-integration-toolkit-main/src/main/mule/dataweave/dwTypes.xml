@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="basicTypes" doc:id="f02c57b2-2c9c-40dd-ad2d-38243fb95e68" >
+		<ee:transform doc:name="basicTypes" doc:id="287f5c42-7c4d-4964-86c8-31727e542984" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output json
+---
+ {
+ 	"stringValue" : "this is string",
+ 	"numberValue" : {
+ 		"key1": 1,
+ 		"key2": 23.45
+ 	},
+ 	"thisisboolean": {
+ 		"key1": true,
+ 		"key2": false
+ 	},
+ 	"thisisArray": [
+ 		//this is array of objects
+ 		{
+ 			"key1": 1
+ 		}
+ 	],
+ 	"thisisMyObject": { 
+ 		//this is object of array = array within an object
+ 		key1:[
+ 			
+ 		]
+ 	},
+ 	"anotherexampleofArray": [
+ 		1,2,3,"manjukaushik",true,{
+ 			"key2": "mulesoft"
+ 		}
+ 	]
+ }]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="methodTypeOf" doc:id="2b767686-3f73-4791-856f-58a1c25e60d1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output dw
+---
+//typeOf("manju")
+//typeOf(1)
+//typeOf(true)
+//typeOf({})
+//typeOf([])
+//typeOf(1.23000000000000000006)
+//typeOf(null)
+typeOf('')]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="selectors" doc:id="dc77e2cb-d352-4fb7-b94a-6d6a325cf1e4" >
+		<ee:transform doc:name="singleSelector" doc:id="f942523c-89ef-4a38-b1f9-d5d9240f35bd" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Index_RangeSelector" doc:id="80e747f3-e1f1-4317-904c-145a0b499954" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+/* Below is the example we worked on
+ * [
+	
+	"india",
+	"china",
+	"UK",
+	"germany",
+	"Canada",
+	"Russia"
+]
+ */
+
+---
+//Index Value Selector can have both positive and negative value
+//payload[-1]
+
+//Range Selector also has positive and negative
+//payload[-1 to -4]
+
+//payload[-4 to -1]
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="MultiValue_Des_Selector" doc:id="0b1b1e1e-947f-46b9-b0c0-1e8970eeafdc" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+/*
+ * {
+
+	"k1": "manju",
+	"k2": {
+	
+		"k2.1": "india",
+		"k2.2": "bangalore"
+	},
+	"k3": [ "1", "2", 3, 4],
+	"k4": [
+			{
+				"k4.1": "india"
+			},
+			{
+				"k4.2": "usa"
+			},
+			{
+				"k4.3.1": "karnataka",
+				"k4.3.2": "kerala"			
+			}
+
+		]
+}
+ */
+
+---
+//Output of Multivalue selector is an Array
+//Works for both Array and objects
+//payload.*k2
+
+//Descendant selector
+//payload.."k4.3.2"
+
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="DWOperators" doc:id="536113a2-3ad9-4e39-9dbd-f63e134422d7" >
+		<ee:transform doc:name="Prepend_Append_Remove_Operator" doc:id="93f0a495-9966-4788-ae2c-69cd6eca74a5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"key1": 76 >> [109],
+	"key2": [151] << 109,
+	"key3": "manju" >> ["kaushik"],
+	"key4": [154] + 165,
+	"key5": [154,187,234] - 187,
+	"key6": ["manju","kaushik","location"] - "location" - "manju" - "kaushik",
+	"key7": ([
+		{
+			"a": "b"
+		},
+		{
+			"c": "d"
+		},
+		{
+			"e": "f"
+		}
+	] - 
+		{
+			"c": "d"
+		}
+	)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

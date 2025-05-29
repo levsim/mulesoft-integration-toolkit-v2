@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="functionsFlow" doc:id="4e4fc918-7794-415f-8d96-44b13f0d7ea8" >
+		<ee:transform doc:name="createFunction" doc:id="9465fc24-0903-456e-a7f8-5bd5e45cdcd4" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+//function has been created for the module AgeID
+fun moduleAgeID(name,location,id,age,salary) = {
+	
+	k1: if (age > 60 and id >= 1) name
+	else if (age < 60 and id >= 1) location 		
+	else
+		salary
+}
+
+fun moduleAgeSalary(name,location,id,age,salary) = {
+	
+	k1: if (age > 60 and salary >= 1000) name
+	else if (age < 60 and salary >= 1000) location 		
+	else
+		salary
+}
+
+fun emptyFunction() = [
+	k1: "hello"
+]
+
+---
+
+//Invoke the function moduleAgeID
+{
+	output1: moduleAgeID("Manju", "india", 3, 45, 100),
+	output2: moduleAgeID("rahul", "usa", 1, 74, 100),
+	output3: moduleAgeSalary("rahul", "usa", 1, 74, 100),
+	output4: emptyFunction()
+
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Optional Parameters" doc:id="d5882dd7-7285-43e2-8620-ca7883bb29e7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+fun twoParams(name1="kaushik", name2, name3) = name1 ++ " " ++ name2 ++ " " ++ name3
+
+---
+
+{
+	k1: twoParams("hello","mule"),
+	k2: twoParams("hello","mule")
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="precedenceOfOptionalParam" doc:id="1cce7a0b-12e1-4c5b-a71e-1abe64b93235" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+fun functionParam1(p1=6, p2=2, p3=3) = {
+	k1: p1,
+	k2: p2,
+	k3: p3
+}
+
+fun functionParam2(p1=10, p2=2, p3=3) = {
+	k1: p1,
+	k2: p2,
+	k3: p3
+}
+
+---
+{
+	k1: functionParam1(10),
+	k2: functionParam1(10,20),
+	k3: functionParam1(10,20,40),
+	
+	k4: functionParam2(671),
+	k5: functionParam2(671,876),
+	k5: functionParam2(11,12,13)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

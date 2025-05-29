@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="Module101" doc:id="eab60611-7025-4bf4-b2db-8dcc48623fee" >
+		<ee:transform doc:name="loadEmpDetails" doc:id="372cc35d-5d38-418d-b2ae-c161c841ff59" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+//Before
+//fun loadEmpDetails(value) = {
+//	"firstName": payload.field1,
+//	"lastName": payload.field2,
+//	"additionalDetails": ""
+//}
+
+//After
+var loadEmpDetails = (value) -> {
+	"firstName": payload.field1,
+	"lastName": payload.field2,
+	"additionalDetails": ""
+}
+
+---
+loadEmpDetails(payload)]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="lamdaOnArray" doc:id="22fbf816-07ed-4496-8948-9174fe4a4591" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var employeeNames = [
+	"Manju",
+	"Rahul",
+	"Mohan"
+]
+---
+EmployeeName: employeeNames map ( (argument1) -> upper(argument1) )]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="basicExample" doc:id="c82a830d-783e-4c11-90f7-2148c75a2eaf" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+(() -> 2+3)() as Number]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="implementFilterLambda" doc:id="841c34bc-cc61-405f-b0f3-dc3a059e2ee5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+var numbers = (1 to 10)
+---
+//function(arg1, arg2)
+//filter(numbers, (item, index) -> (item/2)==1 )
+
+//arg1 function arg2
+
+//numbers filter((item, index) -> (item/5)==1)
+
+numbers filter((item, index) -> (item) > 1)
+		filter((item, index) -> (item) < 5)
+		filter((item, index) -> (item mod 2) == 1)
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

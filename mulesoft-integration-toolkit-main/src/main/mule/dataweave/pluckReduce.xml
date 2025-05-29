@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="Pluck" doc:id="8e222d14-b051-4200-89c1-b6ef638315c9" >
+		<ee:transform doc:name="POC01" doc:id="d2d77ec0-1e24-4faf-9e9a-af5c86d44dec" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+//$ - value, $$- key and $$$ - index
+
+{
+	"k1": "value1",
+	"k2": "value2"
+} pluck {	
+	($$$): $	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="POC02" doc:id="01e09faf-d940-4e36-97a0-4f51c6fa3214" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var readXML = read(
+"
+	<student>
+		<name>Manju</name>
+		<id>4.466</id>
+		<location>IN</location>
+	</student>
+","application/xml")
+
+---
+readXML.student pluck $$$]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="Reduce" doc:id="0edf806b-4d7f-4431-bd67-864c1185f9b8" >
+		<ee:transform doc:name="POC01" doc:id="d70e1518-0871-4e69-a8fe-273c2c58f85b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+//$ - item; $$ - accumulating
+{
+	"reduce": [1,2,3,4,5,89] reduce $,
+	"accumu": [1,2,3,4,5,89] reduce $$,
+	"concatenate": [1,2,3,4,5,89] reduce ($$ ++ $),
+	"addValues": [10,20,30] reduce (item, acc = 0) -> acc + item,
+	"add3": [10,20,30] reduce (item, acc = 12) -> acc + item,
+	"wAObjects":[
+		{
+			"key1": "a",
+			"key2": "b",
+			"key3": "c"
+		}
+	] reduce ( (item, acc="X") -> acc ++ item.key1 ++ item.key2),
+
+	"emptyObject": ([10,20,30] reduce (item, acc = {}) -> acc ++ {
+		"key1": item
+	}) filterObject(value, key, index) -> index == 2
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="basicDwFlow" doc:id="3fcbdad8-757f-4792-b2b5-4bef71a58a3a" >
+		<ee:transform doc:name="declareVariables" doc:id="e2e549a5-658c-45aa-943a-5411caffaa4d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/dw
+//Global Variable
+
+var myName = "It is mulesoft"
+var firstArray = [1,2,3,4,5,6]
+var createObject = {
+
+	"object1" : "Mule",
+	"object2" : "Soft",	
+	"object3" : myName
+}
+
+---
+{
+	key1: createObject.object1 ++ " " ++ createObject.object3
+	
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="Coer" doc:id="d3629cea-854d-4b1c-81aa-b6472a128d4f" >
+		<ee:transform doc:name="POC1" doc:id="244f8bd0-e43b-45b0-8fea-72b799154dc6" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"key1": "22" as Number as String {format: ".00"} as Number,
+	"key2": 125748.32596 as String {format: "#.###"} as Number,
+	"key3": "2020-07-09" as Date as String {format: "dd-MMM-yy", locale: "in"}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="POC2" doc:id="896e59e0-e730-4de6-ab91-35a46d8286dc" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+
+var readXml = read(
+"
+	<students>
+		<student>
+			<age>31.2</age>
+		</student>
+		<student>
+			<age>32.4</age>
+		</student>
+	</students>
+
+", "application/xml"
+)
+
+type studentCor = String {format: "\$#, ###.00"}
+---
+student: readXml.students.*student map
+	key1: $.age as studentCor]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
