@@ -1,0 +1,64 @@
+spring:
+  application:
+    name: mulesoft-migrated-app-dockertest
+
+  # ActiveMQ Configuration for Dockerized Broker
+  activemq:
+    broker-url: tcp://localhost:61616 # Default port mapped in docker-compose.yml
+    # Add user/password if your ActiveMQ Docker image is configured with credentials
+    # (the rmohr/activemq:5.15.9-alpine image uses default credentials admin/admin if not changed via ENV vars)
+    # user: admin 
+    # password: admin
+
+  # PostgreSQL DataSource Configuration for Dockerized Database
+  datasource:
+    # Primary datasource (can be named if multiple datasources are used)
+    # url, username, password match the ENV vars in mock/database/Dockerfile and docker-compose.yml
+    url: jdbc:postgresql://localhost:5432/testdb 
+    username: testuser
+    password: testpassword
+    driver-class-name: org.postgresql.Driver # Ensure org.postgresql:postgresql dependency is in pom.xml
+  
+  jpa: # Example JPA properties if using Spring Data JPA with Camel SQL/JDBC
+    hibernate:
+      ddl-auto: none # Schema is created by init.sql in docker-entrypoint-initdb.d
+                     # Use 'validate' to check if schema matches entities after startup
+    show-sql: true   # Useful for debugging SQL statements during tests
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+# File path configurations - use a specific subdirectory for dockertest
+file:
+  output:
+    directory: target/test-data/dockertest/output
+  input:
+    directory: target/test-data/dockertest/input
+  processed:
+    directory: target/test-data/dockertest/processed
+  base:
+    path: target/test-data/dockertest/untilSuccessfulDemo
+  list:
+    path: target/test-data/dockertest/listFilesFromHere
+
+# Camel configuration
+camel:
+  springboot:
+    name: CamelMigrationServiceDockerTest # Differentiate context name for tests
+  component:
+    platform-http:
+      path-prefix: /api # Consistent with main application.yml
+
+# Server port for HTTP tests (platform-http)
+server:
+  port: 6061 # Ensure this doesn't conflict if other test profiles run in parallel on same host
+
+# Logging levels for tests
+logging:
+  level:
+    com.mycompany.camelmigration: DEBUG
+    org.apache.camel: INFO
+    org.springframework.jdbc.datasource.DriverManagerDataSource: DEBUG # To see DB connections
+    org.springframework.orm.jpa: DEBUG # If using JPA
+    org.hibernate.SQL: DEBUG # If using Hibernate
+    org.apache.activemq: WARN # Reduce ActiveMQ noise

@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  activemq:
+    build: ./activemq
+    ports:
+      - "61616:61616"  # TCP port for ActiveMQ Broker
+      - "8161:8161"    # Web Console
+    container_name: mock-activemq
+
+  postgresdb:
+    build: ./database
+    ports:
+      - "5432:5432"    # PostgreSQL port
+    environment:
+      # These are already set in the postgres Dockerfile, but repeating them here
+      # ensures they are explicitly defined by docker-compose for clarity and potential override.
+      # The Dockerfile's ENV instructions will be used if not overridden here.
+      # For the postgres image, these are primarily used at first initialization to set up the DB.
+      - POSTGRES_USER=testuser
+      - POSTGRES_PASSWORD=testpassword
+      - POSTGRES_DB=testdb
+    container_name: mock-postgresdb
+    volumes:
+      # Optional: Persist data for PostgreSQL if needed across restarts during development
+      # - postgres_data:/var/lib/postgresql/data
+
+# Optional: Define a named volume for PostgreSQL data persistence
+# volumes:
+#   postgres_data:
